@@ -4,8 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Casa;
+
 class CasasApiController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -25,7 +33,7 @@ class CasasApiController extends Controller
     public function store(Request $request)
     {
         $nuevaCasa = new Casa();
-        $nuevaCasa->idUser  = $request->user()->id;
+        $nuevaCasa->id_user = $request->user()->id;
         $nuevaCasa->calle = $request->input('calle');
         $nuevaCasa->numero = $request->input('numero');
         $nuevaCasa->numero_interior =
@@ -35,6 +43,15 @@ class CasasApiController extends Controller
             $request->input('numero_banos');
         $nuevaCasa->numero_habitantes =
             $request->input('numero_habitantes');
+        
+        //Arma una respuesta
+        $respuesta = array();
+        $respuesta['exito']=false;
+        if ($nuevaCasa->save()){
+            $respuesta['exito']=true;
+        }
+        //Regresar espuesta
+        return $respuesta;
     }
 
     /**
