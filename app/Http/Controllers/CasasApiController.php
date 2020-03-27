@@ -21,7 +21,7 @@ class CasasApiController extends Controller
     public function index(Request $request)
     {
         
-        $casas = Casa::where('id_user',$request->user()->id)->get();
+        $casas = Casa::where('id_user',$request->user()->id)->take(20)->get();
         return $casas;
     }
 
