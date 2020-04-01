@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Casa;
 
 class CasasApiController extends Controller
 {
+
     public function __construct()
     {
         $this->middleware('auth:api');
     }
-
+    
     /**
      * Display a listing of the resource.
      *
@@ -20,9 +20,30 @@ class CasasApiController extends Controller
      */
     public function index(Request $request)
     {
+
+        //Cada respuesta regresa 20 casas
+
+        //Solicito informacion
+        $paginaActual = intval($request->input('pagina'));
+        if(!$paginaActual) {
+            $paginaActual = 1;
+        }
+
+        $numeroCasas = Casa::count();
+        $numeroPaginas = ceil($numeroCasas / 20);
+        $casas = Casa::where('id_user', $request->user()->id)->
+        skip(($paginaActual - 1) * 20)->take(20)->get();
         
-        $casas = Casa::where('id_user',$request->user()->id)->take(20)->get();
-        return $casas;
+        //Construyo respuesta
+        $respuesta = array();
+        $respuesta['total'] = $numeroCasas;
+        $respuesta['paginas'] = $numeroPaginas;
+        $respuesta['pagina_actual'] = $paginaActual;
+        $respuesta['casas'] = $casas;
+
+        //Envio respuesta
+        return $respuesta;
+
     }
 
     /**
@@ -33,23 +54,30 @@ class CasasApiController extends Controller
      */
     public function store(Request $request)
     {
+
+        //Crea instancia del modelo
         $nuevaCasa = new Casa();
+
+        //Llena el modelo con info de la solicitud
         $nuevaCasa->id_user = $request->user()->id;
         $nuevaCasa->calle = $request->input('calle');
         $nuevaCasa->numero = $request->input('numero');
-        $nuevaCasa->numero_interno = $request->input('numero_interior');
+        $nuevaCasa->numero_interior = $request->input('numero_interior');
         $nuevaCasa->colonia = $request->input('colonia');
         $nuevaCasa->numero_banos = $request->input('numero_banos');
         $nuevaCasa->numero_habitantes = $request->input('numero_habitantes');
-        
+
+        //Arma una respuesta
         $respuesta = array();
-        $respuesta['exito']= false;
-        if ($nuevaCasa->save())
-        {
+        $respuesta['exito'] = false;
+
+        if ($nuevaCasa->save()) {
             $respuesta['exito'] = true;
         }
+
+        //Regresa la respuesta
         return $respuesta;
-        
+
     }
 
     /**
